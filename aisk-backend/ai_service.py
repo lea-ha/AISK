@@ -15,13 +15,6 @@ class AIService:
             raise ValueError("OpenAI API key not found in environment variables")
     
     def evaluate_startup_idea(self, idea, location="Remote/Online"):
-        """
-        Evaluate startup idea with location context
-        
-        Args:
-            idea (str): The startup idea description
-            location (str): Location context (city, country, or "Remote/Online")
-        """
         prompt = f"""<identity>
         <role>
             You are a seasoned startup mentor and former Y Combinator partner with 15+ years of experience evaluating early-stage ventures. You've seen thousands of pitches and have a keen eye for what makes ideas succeed or fail. You understand how location impacts startup success.
@@ -35,17 +28,10 @@ class AIService:
             2. Market Opportunity: Is there a large enough addressable market?
             3. Differentiation: How is this different/better than existing solutions?
             4. Feasibility: Can this realistically be built and scaled?
-            5. Location Impact: How does the location context affect this idea's potential?
         </evaluation_criteria>
         <location_context>
             LOCATION CONTEXT: {location}
-            Consider factors like:
-            - Local market size and competition
-            - Regulatory environment and business climate
-            - Access to talent, funding, and resources
-            - Cultural factors and user behavior
-            - Infrastructure and technology adoption
-            - If remote/online: global market access vs local execution needs
+            Consider location only when it's specifically relevant to the idea's success (e.g., local services, regulatory constraints, market maturity). For most tech/online ideas, focus on the core concept.
         </location_context>
         <examples>
             EXAMPLES OF YOUR REASONING:
@@ -58,12 +44,12 @@ class AIService:
             Example 2 - "AI-powered tool that automatically generates unit tests" (Remote/Online)  
             Verdict: "Promising" 
             - Solves a real pain point developers face daily
-            - Remote/online model allows global market access with lower operational costs
+            - Clear value proposition with measurable time savings
 
             Example 3 - "Food delivery for busy professionals" (Lagos, Nigeria)
             Verdict: "Promising"
-            - Large addressable market with growing middle class
-            - Less mature delivery infrastructure creates opportunity
+            - Addresses real need in growing urban market
+            - Local opportunity due to less mature delivery infrastructure
         </examples>
 
         <gibberish_detection>
@@ -76,7 +62,7 @@ class AIService:
                 "verdict": "Promising" or "Needs Work" or "Needs Clarification",
                 "explanation": ["First key point about why this verdict", "Second key point supporting the decision"],
                 "improvement": "One specific, actionable suggestion to make this idea stronger",
-                "location_impact": "How the location context affects this idea (1-2 sentences)"
+                "location_note": "Brief note on location relevance (only if location significantly impacts the idea)"
             }}
         </response_format>
 
@@ -84,8 +70,8 @@ class AIService:
             - Keep explanations to exactly 1-2 bullet points as requested
             - Make improvement suggestions specific and actionable
             - Use "Promising", "Needs Work", or "Needs Clarification" as verdicts only
-            - Include location impact analysis
-            - If verdict is "Needs Clarification", ask them to re-explain the idea more clearly
+            - Include location note only when location significantly impacts the idea
+            - For most online/tech ideas, location may not be relevant to mention
         </important>
 """
         
@@ -111,13 +97,14 @@ class AIService:
             explanation = result.get("explanation", [])
             if not isinstance(explanation, list):
                 explanation = [str(explanation)] if explanation else ["Unable to analyze this idea properly."]
-        
+            
+            # Ensure exactly 1-2 bullet points
             explanation = explanation[:2]
             if len(explanation) == 0:
                 explanation = ["This idea needs more clarity to evaluate properly."]
             
             improvement = result.get("improvement", "Consider providing more specific details about your target market and unique value proposition.")
-            location_impact = result.get("location_impact", "Location context not clearly analyzed.")
+            location_impact = result.get("location_impact", "Location not clearly analyzed. It may not be relevant to the idea.")
             
             return {
                 "verdict": verdict,

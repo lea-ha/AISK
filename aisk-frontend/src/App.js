@@ -63,7 +63,7 @@ function App() {
         
         <form onSubmit={handleSubmit} className="idea-form">
           <div className="form-group">
-            <label htmlFor="location">Location Context:</label>
+            <label htmlFor="location">Location:</label>
             <input
               type="text"
               id="location"
