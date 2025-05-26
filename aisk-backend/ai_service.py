@@ -15,6 +15,13 @@ class AIService:
             raise ValueError("OpenAI API key not found in environment variables")
     
     def evaluate_startup_idea(self, idea, location="Remote/Online"):
+        """
+        Evaluate startup idea with location context
+        
+        Args:
+            idea (str): The startup idea description
+            location (str): Location context (city, country, or "Remote/Online")
+        """
         prompt = f"""<identity>
         <role>
             You are a seasoned startup mentor and former Y Combinator partner with 15+ years of experience evaluating early-stage ventures. You've seen thousands of pitches and have a keen eye for what makes ideas succeed or fail. You understand how location impacts startup success.
@@ -31,7 +38,13 @@ class AIService:
         </evaluation_criteria>
         <location_context>
             LOCATION CONTEXT: {location}
-            Consider location only when it's specifically relevant to the idea's success (e.g., local services, regulatory constraints, market maturity). For most tech/online ideas, focus on the core concept.
+            Consider location when it's relevant to the idea's success. This includes:
+            - Physical businesses (restaurants, retail, services): Location is critical
+            - Local market size, competition, demographics
+            - Regulatory environment when relevant
+            - For online/tech ideas: Only mention if location affects market access, regulations, or operations
+            
+            IMPORTANT: If location negatively impacts the idea, clearly state this in the location_note.
         </location_context>
         <examples>
             EXAMPLES OF YOUR REASONING:
@@ -62,7 +75,7 @@ class AIService:
                 "verdict": "Promising" or "Needs Work" or "Needs Clarification",
                 "explanation": ["First key point about why this verdict", "Second key point supporting the decision"],
                 "improvement": "One specific, actionable suggestion to make this idea stronger",
-                "location_note": "Brief note on location relevance (only if location significantly impacts the idea)"
+                "location_note": "Brief note on how location helps or hurts this idea (leave empty only if location is truly irrelevant)"
             }}
         </response_format>
 
@@ -70,8 +83,9 @@ class AIService:
             - Keep explanations to exactly 1-2 bullet points as requested
             - Make improvement suggestions specific and actionable
             - Use "Promising", "Needs Work", or "Needs Clarification" as verdicts only
-            - Include location note only when location significantly impacts the idea
-            - For most online/tech ideas, location may not be relevant to mention
+            - Provide location_note when location impacts the idea (positively or negatively)
+            - Be honest about location challenges - if location hurts the idea, say so clearly
+            - Leave location_note empty only for truly location-agnostic online businesses
         </important>
 """
         
@@ -104,13 +118,13 @@ class AIService:
                 explanation = ["This idea needs more clarity to evaluate properly."]
             
             improvement = result.get("improvement", "Consider providing more specific details about your target market and unique value proposition.")
-            location_impact = result.get("location_impact", "Location not clearly analyzed. It may not be relevant to the idea.")
+            location_note = result.get("location_note", "")
             
             return {
                 "verdict": verdict,
                 "explanation": explanation,
                 "improvement": improvement,
-                "location_impact": location_impact
+                "location_note": location_note
             }
             
         except json.JSONDecodeError as e:
@@ -147,7 +161,7 @@ class AIService:
                 "verdict": verdict,
                 "explanation": [content.strip()],
                 "improvement": "Consider refining your idea and providing more specific details about your target market.",
-                "location_impact": f"Location '{location}' context needs more detailed analysis."
+                "location_note": ""
             }
             
         except Exception as e:
@@ -157,5 +171,5 @@ class AIService:
                 "verdict": "Needs Clarification",
                 "explanation": ["Unable to evaluate this idea due to technical issues. Please try again with a clear description."],
                 "improvement": "Please provide more details about the problem you're solving and your target customers.",
-                "location_impact": "Location impact could not be analyzed."
+                "location_note": ""
             }

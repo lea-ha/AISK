@@ -120,11 +120,6 @@ function App() {
               </ul>
             </div>
             
-            <div className="location-impact">
-              <h3>Location Impact:</h3>
-              <p>{evaluation.location_impact}</p>
-            </div>
-            
             <div className="improvement">
               <h3>Improvement Suggestion:</h3>
               <p>{evaluation.improvement}</p>
