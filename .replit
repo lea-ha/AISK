@@ -1,0 +1,16 @@
+modules = ["python-3.12", "nodejs-20", "web"]
+run = "bash start.sh"
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+run = ["sh", "-c", "bash start.sh"]
+
+[[ports]]
+localPort = 3000
+externalPort = 80
+
+[[ports]]
+localPort = 3001
+externalPort = 3001
