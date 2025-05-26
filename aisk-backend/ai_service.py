@@ -2,8 +2,11 @@ import openai
 import json
 import os
 import logging
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
+
+load_dotenv()
 
 class AIService:
     def __init__(self):
