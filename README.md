@@ -105,4 +105,3 @@ The frontend will run on http://localhost:3000
 - Make sure both the backend and frontend servers are running simultaneously
 - The backend server must be running on port 5000
 - The frontend will automatically connect to the backend
-- Keep your OpenAI API key secure and never commit it to version control 
