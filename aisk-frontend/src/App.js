@@ -1,8 +1,22 @@
 import { useState } from 'react';
 import './App.css';
 
+// Use different URLs for development vs production
+const getServerUrl = () => {
+  const hostname = window.location.hostname;
+  if (hostname.includes(".replit.dev") || hostname.includes(".repl.co")) {
+    const baseUrl = `${window.location.protocol}//${hostname}`;
+    return `${baseUrl}:5000/api`;
+  }
+
+  return "http://localhost:5000/api";
+};
+
+const serverUrl = getServerUrl();
+
 function App() {
   const [idea, setIdea] = useState('');
+  const [location, setLocation] = useState('Remote/Online');
   const [evaluation, setEvaluation] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -13,12 +27,12 @@ function App() {
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:5000/api/evaluate-startup-idea', {
+      const response = await fetch(serverUrl + '/evaluate-startup-idea', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ idea }),
+        body: JSON.stringify({ idea, location }),
       });
       
       if (!response.ok) {
@@ -34,6 +48,13 @@ function App() {
     }
   };
 
+  const handleReset = () => {
+    setIdea('');
+    setLocation('Remote/Online');
+    setEvaluation(null);
+    setError(null);
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -41,16 +62,43 @@ function App() {
         <p className="subtitle">Get AI-powered feedback on your startup idea</p>
         
         <form onSubmit={handleSubmit} className="idea-form">
-          <textarea
-            value={idea}
-            onChange={(e) => setIdea(e.target.value)}
-            placeholder="Describe your startup idea here..."
-            required
-            className="idea-input"
-          />
-          <button type="submit" disabled={loading} className="submit-button">
-            {loading ? 'Evaluating...' : 'Evaluate Idea'}
-          </button>
+          <div className="form-group">
+            <label htmlFor="location">Location Context:</label>
+            <input
+              type="text"
+              id="location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Enter city, country, or 'Remote/Online'"
+              className="location-input"
+            />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="idea">Your Startup Idea:</label>
+            <textarea
+              id="idea"
+              value={idea}
+              onChange={(e) => setIdea(e.target.value)}
+              placeholder="Describe your startup idea here..."
+              required
+              className="idea-input"
+            />
+          </div>
+          
+          <div className="button-group">
+            <button type="submit" disabled={loading} className="submit-button">
+              {loading ? 'Evaluating...' : 'Evaluate Idea'}
+            </button>
+            <button 
+              type="button" 
+              onClick={handleReset} 
+              className="reset-button"
+              disabled={loading}
+            >
+              Reset
+            </button>
+          </div>
         </form>
 
         {error && <div className="error-message">{error}</div>}
@@ -70,6 +118,11 @@ function App() {
                   <li key={index}>{point}</li>
                 ))}
               </ul>
+            </div>
+            
+            <div className="location-impact">
+              <h3>Location Impact:</h3>
+              <p>{evaluation.location_impact}</p>
             </div>
             
             <div className="improvement">
